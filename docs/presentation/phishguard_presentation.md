@@ -189,7 +189,7 @@ Web app outputs:
 
 ## Conclusion
 
-- PhishGuard delivered a complete NLP pipeline, not just a trained model.
+- PhishGuard delivered a complete NLP pipeline
 - The project combined preprocessing, stratified splitting, transformer fine-tuning, evaluation, inference, and a web app.
 - Final performance was strong: **99.48% accuracy** and **0.9948 macro F1**.
 - The result is both technically effective and practical to demonstrate.
