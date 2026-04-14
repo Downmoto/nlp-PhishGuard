@@ -4,6 +4,7 @@ A fine-tuned BERT-based NLP pipeline for binary phishing email detection. PhishG
 
 **Authors:** Arad Fadaei & Mahboobeh Yasini — AIG230 Final Project
 
+Demo Link: https://youtu.be/J-1gts2d3Aw
 ---
 
 ## Table of Contents
