@@ -1,0 +1,5 @@
+== AI Assistance Disclosure
+
+AI tools were used in a limited supporting role during the development of this project. Specifically, AI assistance was used to help accelerate implementation of the Gradio-based web interface and to help diagnose training issues during development when the model was unexpectedly running on the CPU even though CUDA was available and GPU acceleration was intended to be enabled.
+
+The AI assistance was used for debugging guidance, implementation suggestions, and iteration speed. Final engineering decisions, code integration and execution, evaluation, and report writing remained our responsibility. All reported results were produced from the final pipeline after manual review and validation.

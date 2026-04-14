@@ -1,0 +1,15 @@
+== Lessons Learned and Observations
+
+Several lessons became clear during the implementation.
+
+First, *data quality mattered as much as model choice*. Even with a strong pre-trained backbone, preprocessing and label normalization were essential. If raw emails are left with inconsistent formatting, duplicated artifacts, or highly specific identifiers, the model can learn shortcuts that do not generalize.
+
+Second, *normalization improved signal density*. Replacing URLs, email addresses, and phone numbers with stable placeholder tokens reduced vocabulary noise without erasing the fact that those elements were present. In phishing detection, the presence of a link or contact instruction is important, but the exact string is often less informative than the surrounding language.
+
+Third, *engineering efficiency changed the practical training experience*. Pre-tokenizing the dataset, enabling FP16 mixed precision, using pinned memory, and increasing data loader workers all reduced bottlenecks. Those improvements do not change the classifier architecture, but they make the difference between a pipeline that is theoretically sound and one that is pleasant to iterate on.
+
+Fourth, *macro F1 was a better checkpoint criterion than raw accuracy*. Because phishing detection has class-specific consequences, selecting the best model using macro F1 ensured that validation performance stayed balanced across legitimate and phishing classes.
+
+Fifth, *simple explainability is valuable even when it is not perfect*. Security systems are easier to trust when they provide some indication of why a message was flagged. The attention-based token view gives a lightweight explanation channel without requiring a separate interpretation pipeline.
+
+Finally, the evaluation results suggest that transformer-based text classification is a strong fit for phishing detection when the data pipeline is well controlled. The final model achieved high accuracy with only three fine-tuning epochs, which reflects the value of transfer learning from a broadly pre-trained language model.

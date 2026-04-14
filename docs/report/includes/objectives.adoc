@@ -1,0 +1,10 @@
+== Objective of the Project
+
+The project had four main objectives.
+
+. Build an end-to-end phishing email detection pipeline that is reproducible and easy to run.
+. Fine-tune a transformer model that can classify email text as legitimate or phishing with strong generalization on held-out data.
+. Preserve enough interpretability to inspect which tokens influenced a prediction instead of returning only a hard label.
+. Package the result so it can be used both from the command line and through a lightweight web application.
+
+The success criterion was not only high predictive performance, but also a clean engineering workflow: raw data ingestion, preprocessing, stratified splitting, model checkpointing, final evaluation, and user-facing inference.

@@ -1,0 +1,5 @@
+== Conclusion
+
+PhishGuard demonstrates that phishing email detection can be implemented as a clean end-to-end NLP system rather than a collection of brittle rules. The project integrates data preprocessing, stratified dataset management, transformer fine-tuning, rigorous evaluation, explainable single-message inference, and a lightweight web application in one coherent workflow.
+
+The final model achieved 99.48% accuracy and 0.9948 macro F1 on the held-out test set, with only 16 false positives and 49 false negatives. From both a machine learning and software engineering perspective, the project met its objective: it produced a high-performing phishing classifier and packaged it in a way that supports reproducibility, inspection, and practical use.

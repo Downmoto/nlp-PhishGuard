@@ -1,0 +1,246 @@
+== Details of the Technical Solution Implemented
+
+=== System Overview
+
+PhishGuard is implemented as a modular Python project built around Hugging Face Transformers, PyTorch, pandas, and scikit-learn. The repository separates the pipeline into dedicated modules for data loading, text preprocessing, dataset preparation, training, evaluation, inference, and web serving. This structure allowed the project to remain testable and maintainable while still being simple to run through the scripts under `src/scripts/`.
+
+At a high level, the implemented workflow is:
+
+. Load labeled email data from the configured source file.
+. Clean and normalize the text.
+. Split the dataset into train, validation, and test partitions using stratification.
+. Tokenize the text for BERT.
+. Fine-tune the classifier with early stopping and checkpoint management.
+. Evaluate the best checkpoint on the held-out test set.
+. Serve predictions through a CLI tool and a Gradio web interface.
+
+=== Data Sources and Dataset Construction
+
+The repository contains seven raw email corpora under `data/raw/`.
+
+[cols="2,3",options="header"]
+|===
+|Dataset file |Role in the project
+
+|`CEAS_08.csv`
+|Public email security corpus used as part of the overall data collection.
+
+|`Enron.csv`
+|Legitimate enterprise email corpus used to represent normal business communication.
+
+|`Ling.csv`
+|Phishing-related corpus used to broaden attacker language patterns.
+
+|`Nazario.csv`
+|Phishing-related corpus that contributes additional malicious examples.
+
+|`Nigerian_Fraud.csv`
+|Fraud-oriented email corpus that adds persuasive scam language and urgency patterns.
+
+|`phishing_email.csv`
+|The consolidated primary file used by the training pipeline through `config.yaml`.
+
+|`SpamAssasin.csv`
+|Auxiliary email corpus included in the project data inventory.
+|===
+
+Although the repository stores several raw corpora, the implemented training script is configured to load `phishing_email.csv` as the primary source file. This design keeps the training path straightforward while still preserving the broader dataset collection inside the repository for traceability and future extension.
+
+After preprocessing, the dataset is split with a stratified 70/15/15 ratio into train, validation, and test sets. The saved processed splits contain 82,485 examples in total.
+
+[cols="1,1,1,1",options="header"]
+|===
+|Split |Rows |Legitimate |Phishing
+
+|Train
+|57,739
+|27,716
+|30,023
+
+|Validation
+|12,372
+|5,939
+|6,433
+
+|Test
+|12,374
+|5,940
+|6,434
+|===
+
+The class distribution is close to balanced, which is important because it reduces the risk that the classifier learns to exploit a majority-class shortcut.
+
+image::class_distribution.png[Class distribution across the dataset, width=70%]
+
+=== Exploratory Data Analysis
+
+Exploratory data analysis was included to validate the dataset before training and to understand broad linguistic differences between legitimate and phishing messages. The project generates several reusable figures:
+
+. Class distribution
+. Text length distribution by class
+. Top words in legitimate email
+. Top words in phishing email
+. Word clouds for both classes
+. URL presence rate
+
+The length distribution shows that email bodies vary significantly in size, which justifies the use of truncation at a fixed maximum sequence length during tokenization.
+
+image::length_distribution.png[Email length distribution by class, width=75%]
+
+The word-level plots and word clouds are not used directly by the model, but they provide a qualitative check that the dataset contains plausible language cues for both benign and malicious communication.
+
+image::top_words_legitimate.png[Most common words in legitimate email, width=75%]
+
+image::top_words_phishing.png[Most common words in phishing email, width=75%]
+
+=== Preprocessing Pipeline
+
+Raw email text is noisy. It may contain HTML fragments, URLs, repeated whitespace, and personally identifiable information such as phone numbers or email addresses. If that noise is left untouched, the model may overfit to incidental tokens rather than genuine phishing cues.
+
+The implemented preprocessing pipeline applies four operations in a fixed order:
+
+. *HTML stripping* using BeautifulSoup, with a regex fallback if BeautifulSoup is unavailable.
+. *URL normalization* by replacing links with the placeholder token `[URL]`.
+. *PII masking* by replacing email addresses with `[EMAIL]` and phone numbers with `[PHONE]`.
+. *Whitespace normalization* to collapse repeated spaces and line breaks.
+
+This design keeps the semantic structure of the email while reducing unnecessary variation. For example, two phishing emails containing different domains still share the same normalized `[URL]` token, allowing the model to focus on the surrounding language rather than memorizing a particular string.
+
+=== Model Architecture
+
+The core classifier is based on `bert-base-uncased`, a bidirectional transformer pre-trained on large general-domain corpora. The project wraps it with Hugging Face `BertForSequenceClassification` configured for two output labels:
+
+. `0` for legitimate email
+. `1` for phishing email
+
+The maximum sequence length is set to 256 tokens. This is a practical tradeoff between retaining enough content from typical email bodies and keeping GPU memory usage under control. The final classification layer maps the contextualized BERT representation to a binary decision.
+
+One implementation detail that improved efficiency is the custom `PhishingDataset` class. Instead of tokenizing every sample repeatedly on each epoch, the dataset pre-tokenizes the text once during initialization. That reduces CPU overhead during training and makes better use of the GPU.
+
+=== Training Strategy
+
+Training is handled through Hugging Face `Trainer`, which provides a robust loop for optimization, evaluation, checkpointing, and metric tracking. The project configuration uses the hyperparameters shown below.
+
+[cols="2,2",options="header"]
+|===
+|Hyperparameter |Value
+
+|Base model
+|`bert-base-uncased`
+
+|Batch size
+|16
+
+|Learning rate
+|`2.0e-5`
+
+|Epochs
+|3
+
+|Warmup steps
+|500
+
+|Weight decay
+|0.01
+
+|Maximum sequence length
+|256
+
+|Evaluation strategy
+|Per epoch
+
+|Checkpoint save strategy
+|Per epoch
+
+|Best-model selection metric
+|Macro F1
+
+|Mixed precision
+|FP16 enabled
+
+|Data loader workers
+|4
+|===
+
+The training loop also uses early stopping with a patience of 2 validation checks. That prevents unnecessary over-training and keeps the selected checkpoint aligned with generalization performance rather than just continued loss minimization on the training split.
+
+Another practical feature is automatic checkpoint recovery. If training is interrupted, the trainer scans the output directory for the latest `checkpoint-*` folder and resumes from that point. This matters when working with long-running GPU experiments.
+
+=== Evaluation Method
+
+The final model is evaluated on the held-out test set, which was never used for optimization. The evaluation module computes:
+
+. Accuracy
+. Macro F1 score
+. ROC-AUC
+. Full classification report
+. Confusion matrix
+. ROC curve plot
+
+These metrics were chosen because phishing detection has asymmetric risks. Accuracy is useful at a glance, but macro F1 gives a more balanced picture of per-class quality, and ROC-AUC measures ranking quality across thresholds.
+
+=== Final Results
+
+The saved best checkpoint produced the following results on the 12,374-example test split.
+
+[cols="2,2",options="header"]
+|===
+|Metric |Value
+
+|Accuracy
+|99.48%
+
+|Macro F1
+|0.9948
+
+|ROC-AUC
+|0.9998
+
+|False positives
+|16
+
+|False negatives
+|49
+|===
+
+The confusion matrix provides a clearer operational view.
+
+[cols="2,1,1",options="header"]
+|===
+|Actual class |Predicted legitimate |Predicted phishing
+
+|Legitimate
+|5,924
+|16
+
+|Phishing
+|49
+|6,385
+|===
+
+image::confusion_matrix.png[Confusion matrix for the test set, width=70%]
+
+These numbers indicate that the model learned a strong separation boundary between benign and malicious emails. The very small number of false positives is particularly encouraging because excessive false alarms reduce trust in a security tool and create operational friction for users.
+
+=== Inference and Explainability
+
+The inference pipeline is implemented in `PhishGuardPredictor`. For a single input email, it:
+
+. Applies the same preprocessing pipeline used during training.
+. Tokenizes the text using the saved tokenizer.
+. Runs the fine-tuned classifier.
+. Converts logits to probabilities through softmax.
+. Returns the predicted label and confidence.
+. Extracts token-level attention scores from the last transformer layer.
+
+The explainability mechanism is intentionally lightweight. It uses the attention from the `[CLS]` token in the final layer, averaged across heads, to estimate which tokens received the most model focus. This does not provide a perfect causal explanation, but it gives the user a practical indication of the parts of the message that influenced the prediction.
+
+=== User Interface and Deployment Path
+
+To make the model accessible beyond offline experiments, the project includes both a command-line predictor and a Gradio web interface. The Gradio application accepts raw email text and returns three outputs:
+
+. The predicted verdict
+. The confidence score
+. A short list of highly attended tokens
+
+This interface is useful for demonstration, manual validation, and rapid usability testing. It also shows that the project is not only a model training exercise but a deployable NLP workflow with an end-user entry point.

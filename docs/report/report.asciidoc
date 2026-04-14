@@ -1,0 +1,34 @@
+= PhishGuard: Fine-Tuned BERT for Phishing Email Detection
+Arad Fadaei; Mahboobeh Yasini
+:doctype: book
+:toc:
+:toclevels: 3
+:toc-title: Table of Contents
+:sectnums:
+:includedir: includes
+:imagesdir: ../../reports/figures
+:source-highlighter: rouge
+:icons: font
+:figure-caption: Figure
+:table-caption: Table
+:pdf-page-size: A4
+:pdf-page-layout: portrait
+:revnumber: 1.0
+:revremark: Final Submission
+:description: A fine-tuned BERT-based NLP pipeline for binary phishing email classification, achieving 99.48% accuracy across seven combined email corpora.
+:keywords: NLP, BERT, phishing detection, email classification, transformer, fine-tuning, AIG230
+
+include::{includedir}/abstract.adoc[]
+
+include::{includedir}/problem.adoc[]
+
+include::{includedir}/objectives.adoc[]
+
+include::{includedir}/technical_solution.adoc[]
+
+include::{includedir}/lessons_learned.adoc[]
+
+include::{includedir}/conclusion.adoc[]
+
+include::{includedir}/ai_disclosure.adoc[]
+

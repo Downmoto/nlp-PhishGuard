@@ -1,0 +1,7 @@
+== Problem
+
+Email remains one of the most common attack surfaces for social engineering. Phishing messages are inexpensive to produce, easy to distribute at scale, and increasingly difficult to distinguish from normal business communication. The main technical challenge is that modern phishing emails do not always rely on obvious spelling errors or suspicious formatting. Many imitate ordinary workplace requests, account notifications, invoice workflows, or urgent administrative actions.
+
+Traditional email filtering approaches often depend on blacklists, hand-written rules, sender reputation, or shallow keyword matching. Those methods are useful, but they become less effective when an attacker changes wording, rotates infrastructure, or deliberately mimics legitimate organizational tone. In other words, the classification problem is semantic rather than purely lexical. A model must learn patterns of intent, urgency, impersonation, and deception that appear in natural language, even when the message looks professionally written.
+
+This project addresses that gap by treating phishing detection as a supervised natural language processing task. Instead of relying on manually engineered rules alone, the system learns from labeled email corpora and predicts whether an email is legitimate or phishing based on the message content.
