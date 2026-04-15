@@ -12,9 +12,11 @@ Presenter: Mahboobeh
 
 Script:
 
-Good morning. We are Arad Fadaei and Mahboobeh Yasini, and this presentation covers PhishGuard, our final project on phishing email detection. Our goal was to build a practical NLP system that can distinguish legitimate email from phishing email by fine-tuning BERT on labeled message data.
+Phishing is still a major threat in email communication.
 
-To understand why we chose this problem, we should start with the current phishing threat itself.
+Today’s phishing emails look very professional and often imitate real workplace messages.
+Because of that, simple rule-based filters or keyword matching are not enough anymore.
+The main challenge is that this problem is semantic, meaning the model needs to understand intent, urgency, and impersonation—not just words.
 
 ## Slide 2 - Problem
 
@@ -32,9 +34,13 @@ Presenter: Mahboobeh
 
 Script:
 
-We set out to do four things. First, build a complete and reproducible phishing detection pipeline. Second, fine-tune a transformer model for binary email classification. Third, preserve some interpretability instead of returning only a hard label. And fourth, package the system so it works both from the command line and through a lightweight web interface. Success for us was high accuracy and also a clean engineering workflow from raw data to deployment.
-
-With those objectives in place, this was the overall pipeline we implemented.
+We had four main goals.
+First, to build an end-to-end phishing email detection pipeline.
+Second, to fine-tune a transformer model for binary classification of email text.
+Third, to preserve some interpretability, instead of returning only a hard label.
+And fourth, to provide both a CLI workflow and a lightweight web interface.
+For us, success meant strong performance and a clean workflow from raw data to deployment.
+With these goals in place, this is the pipeline we implemented.
 
 ## Slide 4 - Technical Solution Overview
 
@@ -42,7 +48,10 @@ Presenter: Mahboobeh
 
 Script:
 
-The workflow is straightforward and modular. We load labeled email data, preprocess the raw text, split it into train, validation, and test sets, tokenize the text for BERT, fine-tune the classifier, evaluate the best checkpoint, and finally serve inference through both a CLI tool and a Gradio web app. We built this pipeline with PyTorch, Hugging Face Transformers, pandas, scikit-learn, and Gradio so the project would be both reproducible and easy to demonstrate.
+Our pipeline starts by loading labeled email data.
+Then we preprocess the text, split it into train, validation, and test sets.
+After that, we tokenize the text using BERT tokenizer and fine-tune the model.
+Finally, we evaluate the model and deploy it using CLI and Gradio.
 
 The next piece is the data that drives the whole system.
 
@@ -52,21 +61,16 @@ Presenter: Mahboobeh
 
 Script:
 
-The repository contains seven raw corpora under the data folder, but the current training pipeline is configured to use phishing_email.csv as the consolidated primary source file. After preprocessing, the final dataset contains 82,485 emails. We used a stratified 70, 15, and 15 split so that class balance stays consistent across train, validation, and test. That produced 57 thousand training examples, 12 thousand validation examples, and 12 thousand test examples. The class distribution is close to balanced, which matters because it reduces the chance that the classifier learns an easy majority-class shortcut.
+We used a dataset with about 82,000 emails.
+The data was split into 70% training, 15% validation, and 15% testing.
+The dataset includes both legitimate and phishing emails, and the split was stratified to keep balance between classes.
 
 Once the data was collected, the next step was cleaning it so the model learns meaningful patterns instead of noise.
 
-## Slide 6 - Preprocessing Pipeline
+Arad will now cover the model
 
-Presenter: Mahboobeh
 
-Script:
-
-Raw email text is noisy, so preprocessing was a major part of the project. We stripped HTML, replaced URLs with the placeholder token [URL], masked email addresses as [EMAIL], masked phone numbers as [PHONE], and normalized repeated whitespace. This matters because it reduces variation that does not generalize. For example, if two phishing emails contain different links, the model should focus on the suspicious surrounding language rather than memorizing a specific domain. That improves signal density while still preserving the structure of the message.
-
-At this point I will hand over to Arad to cover the model, evaluation, and final results.
-
-## Slide 7 - Model and Training Strategy
+## Slide 6 - Model and Training Strategy
 
 Presenter: Arad
 
@@ -76,7 +80,7 @@ Our base model is bert-base-uncased, configured for binary sequence classificati
 
 After training, we evaluated the best checkpoint on a held-out test split that was never used for optimization.
 
-## Slide 8 - Evaluation Results
+## Slide 7 - Evaluation Results
 
 Presenter: Arad
 
@@ -86,17 +90,8 @@ The final model performed very strongly on the test set. It achieved 99.48 perce
 
 The confusion matrix gives a more operational view of those numbers.
 
-## Slide 9 - Confusion Matrix
 
-Presenter: Arad
-
-Script:
-
-This confusion matrix shows where the model made its errors. Out of 5,940 legitimate emails, only 16 were incorrectly flagged as phishing. Out of 6,434 phishing emails, 49 were missed. The especially low false-positive count is important because security tools lose trust quickly if they block too many legitimate messages. So this result is statistically strong, but also meaningful from a usability perspective.
-
-Beyond classification performance, we also wanted the system to be inspectable and easy to use.
-
-## Slide 10 - Explainability and Web Interface
+## Slide 8 - Explainability and Web Interface
 
 Presenter: Arad
 
@@ -106,21 +101,12 @@ For inference, our predictor returns a lot more than a single label. It outputs 
 
 That leads directly into the demo slide.
 
-## Slide 11 - Demo
+## Slide 9 - Demo
 
 https://youtu.be/J-1gts2d3Aw
 
-## Slide 12 - Lessons Learned
 
-Presenter: Arad
-
-Script:
-
-One of the main lessons was that data quality mattered as much as model choice. Normalizing URLs and personal identifiers improved the signal available to the model without removing important context. We also found that engineering choices such as pre-tokenization, FP16, pinned memory, and multiple data-loader workers made training much more practical. Finally, macro F1 was a better checkpoint metric than accuracy alone, and even lightweight explainability made the final system easier to inspect and trust.
-
-To close, I will summarize the overall outcome of the project.
-
-## Slide 13 - Conclusion
+## Slide 10 - Conclusion
 
 Presenter: Arad
 

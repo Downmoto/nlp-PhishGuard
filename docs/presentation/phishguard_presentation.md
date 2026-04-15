@@ -106,7 +106,7 @@ Core stack: **PyTorch**, **Hugging Face Transformers**, **pandas**, **scikit-lea
 
 ---
 
-## Preprocessing Pipeline
+<!-- ## Preprocessing Pipeline
 
 - Strip HTML using BeautifulSoup with regex fallback
 - Replace URLs with `[URL]`
@@ -120,7 +120,7 @@ Why this mattered:
 - preserves the semantic structure of the message
 - avoids memorizing raw identifiers that do not generalize
 
----
+--- -->
 
 ## Model and Training Strategy
 
@@ -150,14 +150,13 @@ Why this setup worked:
 These results were measured on the held-out **12,374** test split.
 
 ---
-
-## Confusion Matrix
+<!-- ## Confusion Matrix
 
 ![bg left](../../reports/figures/confusion_matrix.png)
 
 Small false-positive count is especially valuable because excessive blocking of legitimate email reduces trust in a security tool.
 
----
+--- -->
 
 ## Explainability and Web Interface
 
@@ -174,9 +173,11 @@ Web app outputs:
 ---
 
 ## Demo
+Due to issues with hugging face repos, we were unable to upload our model to a remote repo.
+
 ---
 
-## Lessons Learned
+<!-- ## Lessons Learned
 
 - Data quality mattered as much as model choice.
 - URL and PII normalization improved signal density.
@@ -185,7 +186,7 @@ Web app outputs:
 - Macro F1 was a better checkpoint metric than raw accuracy.
 - Lightweight explainability made the system easier to inspect and trust.
 
----
+--- -->
 
 ## Conclusion
 
