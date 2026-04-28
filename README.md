@@ -7,6 +7,9 @@ A fine-tuned BERT-based NLP pipeline for binary phishing email detection. PhishG
 Demo Link: https://youtu.be/J-1gts2d3Aw
 ---
 
+## Final Report
+The final report can be found in [docs/report/report.pdf](https://github.com/Downmoto/nlp-phishguard/blob/main/docs/report/report.pdf)
+
 ## Table of Contents
 
 - [Overview](#overview)
